@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8月奶茶预约</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', '微软雅黑', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ffa502);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+        }
+
+        .menu-list {
+            padding: 30px 20px;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .menu-item.selected {
+            border-color: #ff6b6b;
+            background: linear-gradient(45deg, #fff5f5, #fff);
+        }
+
+        .menu-info {
+            flex: 1;
+        }
+
+        .menu-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .menu-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+
+        .menu-stock {
+            font-size: 12px;
+            color: #666;
+            background: #f8f9fa;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .select-btn {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item.selected .select-btn {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .select-btn::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-item.selected .select-btn::after {
+            opacity: 1;
+        }
+
+        .special-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .special-item::before {
+            content: '超值推荐';
+            position: absolute;
+            top: 10px;
+            right: -20px;
+            background: #ff4757;
+            color: white;
+            padding: 2px 25px;
+            font-size: 10px;
+            transform: rotate(45deg);
+            z-index: 1;
+        }
+
+        .order-section {
+            padding: 0 20px 30px;
+        }
+
+        .order-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #ffa502);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .order-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 90%;
+            width: 350px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        .selected-drink {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .modal-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .modal-btn.cancel {
+            background: #6c757d;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        .bounce {
+            animation: bounce 1s infinite;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥤 8月奶茶预约</h1>
+            <p>请我喝第①杯奶茶吧！</p>
+        </div>
+
+        <div class="menu-list" id="menuList">
+            <!-- 菜单项目将通过JavaScript动态生成 -->
+        </div>
+
+        <div class="order-section">
+            <button class="order-btn" id="orderBtn" disabled>选择奶茶预约</button>
+        </div>
+
+        <div class="footer">
+            <p>❤️ 每个奶茶限量1杯，先到先得</p>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h2>确认预约</h2>
+            <p>您要预约的奶茶是：</p>
+            <div class="selected-drink" id="selectedDrinkInfo"></div>
+            <p>确认预约吗？</p>
+            <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+            <button class="modal-btn" onclick="confirmOrder()">确认预约</button>
+        </div>
+    </div>
+
+    <script>
+        // 奶茶菜单数据
+        const menuItems = [
+            { id: 1, name: "伯牙绝弦", price: 20, stock: 1 },
+            { id: 2, name: "茉莉奶绿", price: 16, stock: 1 },
+            { id: 3, name: "茉莉奶白", price: 16, stock: 1 },
+            { id: 4, name: "野山栀子", price: 22, stock: 1 },
+            { id: 5, name: "田园乌龙", price: 20, stock: 1 },
+            { id: 6, name: "万里木兰", price: 19, stock: 1 },
+            { id: 7, name: "青青糯山", price: 17, stock: 1 },
+            { id: 8, name: "馥郁兰香", price: 19, stock: 1 },
+            { id: 9, name: "桂花飘飘", price: 19, stock: 1 },
+            { id: 10, name: "芋圆葡萄", price: 8, stock: 1 },
+            { id: 11, name: "让我滚", price: 5, stock: 1, special: true }
+        ];
+
+        let selectedDrink = null;
+
+        // 渲染菜单
+        function renderMenu() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+
+            menuItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = `menu-item ${item.special ? 'special-item' : ''}`;
+                menuItem.onclick = () => selectDrink(item);
+                
+                menuItem.innerHTML = `
+                    <div class="menu-info">
+                        <div class="menu-name">${item.name}</div>
+                        <div class="menu-price">¥${item.price}</div>
+                        <div class="menu-stock">剩余: ${item.stock}杯</div>
+                    </div>
+                    <div class="select-btn"></div>
+                `;
+                
+                menuList.appendChild(menuItem);
+            });
+        }
+
+        // 选择奶茶
+        function selectDrink(drink) {
+            if (drink.stock <= 0) return;
+
+            selectedDrink = drink;
+            
+            // 更新UI
+            document.querySelectorAll('.menu-item').forEach((item, index) => {
+                if (menuItems[index].id === drink.id) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+
+            document.getElementById('orderBtn').disabled = false;
+            document.getElementById('orderBtn').classList.add('bounce');
+            setTimeout(() => {
+                document.getElementById('orderBtn').classList.remove('bounce');
+            }, 1000);
+        }
+
+        // 显示确认模态框
+        function showConfirmModal() {
+            if (!selectedDrink) return;
+
+            document.getElementById('selectedDrinkInfo').innerHTML = `
+                <strong>${selectedDrink.name}</strong><br>
+                价格: ¥${selectedDrink.price}
+            `;
+            
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // 确认预约
+        function confirmOrder() {
+            if (!selectedDrink) return;
+
+            // 更新库存
+            selectedDrink.stock = 0;
+            
+            // 更新UI
+            renderMenu();
+            
+            // 显示成功消息
+            alert(`🎉 预约成功！\n您已成功预约 ${selectedDrink.name}\n价格: ¥${selectedDrink.price}\n感谢您的心意！`);
+            
+            // 重置选择
+            selectedDrink = null;
+            document.getElementById('orderBtn').disabled = true;
+            
+            // 关闭模态框
+            closeModal();
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMenu();
+            
+            // 绑定预约按钮事件
+            document.getElementById('orderBtn').addEventListener('click', showConfirmModal);
+            
+            // 点击模态框外部关闭
+            document.getElementById('confirmModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
